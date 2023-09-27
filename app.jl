@@ -6,6 +6,7 @@ include("model.jl")
 
 # Análise 1 - Com o objetivo de maximar a quantidade ofertada olhando a media de geracao horaria no Real-Time 
     revenue_1    = zeros(nScen, nBids)
+    revenue_2    = zeros(nScen, nBids)
     offerCurve_1 = zeros(24, nBids)
 
     for iOffer in 1:nBids
@@ -18,33 +19,39 @@ include("model.jl")
                 priceRT[:,ih] .* (avgGenRT[:,ih] .- JuMP.value(qDA[ih]))
             ) 
             for ih in 1:24)
+                
+        revenue_2[:, iOffer] = sum(
+            (
+                priceRT[:,ih] .* (avgGenRT[:,ih])
+            ) 
+            for ih in 1:24)
     end
 #
 
 
 # Análise 2 - Com o objetivo de maximar a quantidade ofertada olhando a geracao horaria no Real-Time 
-revenue_2    = zeros(nScen, nBids)
-revenue_3    = zeros(nScen, nBids)
+    revenue_3    = zeros(nScen, nBids)
+    revenue_4    = zeros(nScen, nBids)
 
-offerCurve_2 = zeros(24, nBids)
+    offerCurve_2 = zeros(24, nBids)
 
-for iOffer in 1:nBids
+    for iOffer in 1:nBids
 
-    qDA = optimalOffer(G, genRT, priceRT, priceDA, iOffer)
-    offerCurve_2[:,iOffer] = JuMP.value.(qDA[:])
-    revenue_2[:, iOffer] = sum(
-        (
-            priceDA[iOffer] .* (priceDA[iOffer] .<= priceRT[:,ih]) .* JuMP.value(qDA[ih]) .+ 
-            priceRT[:,ih] .* (genRT[:,ih] .- JuMP.value(qDA[ih]))
-        ) 
-        for ih in 1:24)
+        qDA = optimalOffer(G, genRT, priceRT, priceDA, iOffer)
+        offerCurve_2[:,iOffer] = JuMP.value.(qDA[:])
+        revenue_3[:, iOffer] = sum(
+            (
+                priceDA[iOffer] .* (priceDA[iOffer] .<= priceRT[:,ih]) .* JuMP.value(qDA[ih]) .+ 
+                priceRT[:,ih] .* (genRT[:,ih] .- JuMP.value(qDA[ih]))
+            ) 
+            for ih in 1:24)
 
-    revenue_3[:, iOffer] = sum(
-        (
-            priceRT[:,ih] .* (genRT[:,ih])
-        ) 
-        for ih in 1:24)
-end
+        revenue_4[:, iOffer] = sum(
+            (
+                priceRT[:,ih] .* (genRT[:,ih])
+            ) 
+            for ih in 1:24)
+    end
 #
 
 # Plots
@@ -56,7 +63,9 @@ end
     histogram!(revenue_2[:,4],xlims=(-5*10^5,5*10^5))
     histogram!(revenue_3[:,4])
 
-# Revenue Average
-    mean(revenue_1)
-    mean(revenue_2)
-    mean(revenue_3)
+# Results
+    results_1 = describeStatistcs(revenue_1)
+    results_2 = describeStatistcs(revenue_2)
+    results_3 = describeStatistcs(revenue_3)
+    results_4 = describeStatistcs(revenue_4)
+#
