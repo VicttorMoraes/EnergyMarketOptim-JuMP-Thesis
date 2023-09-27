@@ -1,3 +1,8 @@
+# Inputs Manuais
+    G = 100                                     # Maximum Generation/Quantity | Unit: MW
+    priceDA = [0 10 20 30 40 50 60 70 80 90]    # Day Ahead Price - Biddings  | Unit: $/MWh    
+#
+
 # Real-Time Price - DataFrame
     priceRT_file = "inputs/Price-Real-Time-365.csv"
     priceRT_df   = CSV.read(priceRT_file, DataFrame; drop=[:1])
@@ -5,11 +10,9 @@
     priceRT      = Matrix(priceRT_df)
 #
 
-# Inputs
-    G = 100                                     # Maximum Generation/Quantity | Unit: MW
-    priceDA = [0 10 20 30 40 50 60 70 80 90]    # Day Ahead Price - Biddings  | Unit: $/MWh         
-    nScen = size(priceRT)[1]                    # Number of scenarios         | Unit: Scalar (One-Dimensional)
-    nBids = size(priceDA)[2]                    # Number of bids              | Unit: Scalar (One-Dimensional)
+# Number of scenarios and bids    
+    nScen = size(priceRT)[1]           # Number of scenarios         | Unit: Scalar (One-Dimensional)
+    nBids = size(priceDA)[2]           # Number of bids              | Unit: Scalar (One-Dimensional)
 #
 
 # Real-Time Price - Average 
