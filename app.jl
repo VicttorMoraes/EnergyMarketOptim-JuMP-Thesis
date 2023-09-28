@@ -1,8 +1,7 @@
 using JuMP, GLPK, CSV, DataFrames, Plots, Distributions
 
 include("inputs.jl")
-include("model.jl")
-
+include("functions.jl")
 
 # Análise 1 - Com o objetivo de maximar a quantidade ofertada olhando a media de geracao horaria no Real-Time 
     revenue_1    = zeros(nScen, nBids)
@@ -20,14 +19,9 @@ include("model.jl")
             ) 
             for ih in 1:24)
                 
-        revenue_2[:, iOffer] = sum(
-            (
-                priceRT[:,ih] .* (avgGenRT[:,ih])
-            ) 
-            for ih in 1:24)
+        revenue_2[:, iOffer] = revenueOnlyRT(revenue_2, priceRT, genRT, iOffer)
     end
 #
-
 
 # Análise 2 - Com o objetivo de maximar a quantidade ofertada olhando a geracao horaria no Real-Time 
     revenue_3    = zeros(nScen, nBids)
@@ -46,22 +40,18 @@ include("model.jl")
             ) 
             for ih in 1:24)
 
-        revenue_4[:, iOffer] = sum(
-            (
-                priceRT[:,ih] .* (genRT[:,ih])
-            ) 
-            for ih in 1:24)
+        revenue_4[:, iOffer] = revenueOnlyRT(revenue_4, priceRT, genRT, iOffer)
     end
 #
 
-# Plots
-    aux = 7
-    plot(offerCurve_1[:,aux])
-    plot!(offerCurve_2[:,aux])
+# # Plots
+#     aux = 7
+#     plot(offerCurve_1[:,aux])
+#     plot!(offerCurve_2[:,aux])
     
-    histogram(revenue_1[:,4],xlims=(-5*10^5,5*10^5))
-    histogram!(revenue_2[:,4],xlims=(-5*10^5,5*10^5))
-    histogram!(revenue_3[:,4])
+#     histogram(revenue_1[:,4],xlims=(-5*10^5,5*10^5))
+#     histogram!(revenue_2[:,4],xlims=(-5*10^5,5*10^5))
+#     histogram!(revenue_3[:,4])
 
 # Results
     results_1 = describeStatistcs(revenue_1)

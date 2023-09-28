@@ -15,6 +15,16 @@ function optimalOffer(G, genRT, priceRT, priceDA, iOffer)
     return qDA
 end
 
+function revenueOnlyRT(revenueRT, priceRT, genRT, iOffer)
+
+    revenueRT[:, iOffer] = sum(
+            (
+                priceRT[:,ih] .* (genRT[:,ih])
+            ) 
+            for ih in 1:24)
+    return revenueRT[:, iOffer]
+end
+
 function describeStatistcs(matrix)
     # Creating a DataFrame to hold the descriptive statistics
     stats_df = DataFrame(
