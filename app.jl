@@ -10,16 +10,11 @@ include("functions.jl")
 
     for iOffer in 1:nBids
 
-        qDA = optimalOffer(G, avgGenRT, priceRT, priceDA, iOffer)
+        qDA = optimalOffer(G, avgGenRT, priceRT, priceDAOffer, iOffer)
         offerCurve_1[:,iOffer] = JuMP.value.(qDA[:])
-        revenue_1[:, iOffer] = sum(
-            (
-                priceDA[iOffer] .* (priceDA[iOffer] .<= priceRT[:,ih]) .* JuMP.value(qDA[ih]) .+ 
-                priceRT[:,ih] .* (avgGenRT[:,ih] .- JuMP.value(qDA[ih]))
-            ) 
-            for ih in 1:24)
-                
-        revenue_2[:, iOffer] = revenueOnlyRT(revenue_2, priceRT, genRT, iOffer)
+        revenue_1[:, iOffer] = calcRevenue(revenue_1, priceRT, avgGenRT, priceDAOffer, qDA, iOffer, priceDA)
+        # revenue_2[:, iOffer] = calcRevenue(revenue_1, priceRT, avgGenRT, zeros(10), zeros(24), iOffer, priceDA)
+
     end
 #
 
@@ -31,16 +26,11 @@ include("functions.jl")
 
     for iOffer in 1:nBids
 
-        qDA = optimalOffer(G, genRT, priceRT, priceDA, iOffer)
+        qDA = optimalOffer(G, genRT, priceRT, priceDAOffer, iOffer)
         offerCurve_2[:,iOffer] = JuMP.value.(qDA[:])
-        revenue_3[:, iOffer] = sum(
-            (
-                priceDA[iOffer] .* (priceDA[iOffer] .<= priceRT[:,ih]) .* JuMP.value(qDA[ih]) .+ 
-                priceRT[:,ih] .* (genRT[:,ih] .- JuMP.value(qDA[ih]))
-            ) 
-            for ih in 1:24)
+        revenue_3[:, iOffer] = calcRevenue(revenue_3, priceRT, genRT, priceDAOffer, qDA, iOffer)
+        revenue_4[:, iOffer] = calcRevenue(revenue_4, priceRT, genRT, zeros(10), zeros(24), iOffer)
 
-        revenue_4[:, iOffer] = revenueOnlyRT(revenue_4, priceRT, genRT, iOffer)
     end
 #
 

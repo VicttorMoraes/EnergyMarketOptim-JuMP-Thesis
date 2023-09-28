@@ -1,13 +1,20 @@
 # Inputs Manuais
     G = 100                                     # Maximum Generation/Quantity | Unit: MW
-    priceDA = [0 10 20 30 40 50 60 70 80 90]    # Day Ahead Price - Biddings  | Unit: $/MWh    
+    priceDAOffer = [0 10 20 30 40 50 60 70 80 90]    # Day Ahead Price - Biddings  | Unit: $/MWh    
 #
 
 # Real-Time Price - DataFrame
-    priceRT_file = "inputs/Price-Real-Time-365.csv"
+    priceRT_file = "inputs/Price-Real-Time-2023.csv"
     priceRT_df   = CSV.read(priceRT_file, DataFrame; drop=[:1])
     priceRT_df   = coalesce.(priceRT_df, 0)
     priceRT      = Matrix(priceRT_df)
+#
+
+# Day-Ahead Price - DataFrame
+    priceDA_file = "inputs/Price-Day-Ahead-2023.csv"
+    priceDA_df   = CSV.read(priceDA_file, DataFrame; drop=[:1])
+    priceDA_df   = coalesce.(priceDA_df, 0)
+    priceDA      = Matrix(priceDA_df)
 #
 
 # Number of scenarios and bids    
@@ -22,14 +29,14 @@
 # end
 
 # Real-Time Price - Hourly Average 
-avgPriceRT = zeros(24,nScen)
+avgPriceRT = zeros(nScen,24)
 for ih in 1:24
-    avgPriceRT[:,ih]    .= sum((priceRT_df[s,ih]) for s in 1:nScen) ./ nScen
+    avgPriceRT[:,ih]    .= sum((priceRT_df[s, ih]) for s in 1:nScen) ./ nScen
 end
 #
 
 # Real-Time Generation - DataFrame
-    genRT_file = "inputs/Generation-Real-Time-365.csv"
+    genRT_file = "inputs/Generation-Real-Time-2023.csv"
     genRT_df   = CSV.read(genRT_file, DataFrame; drop=[:1])
     genRT_df   = coalesce.(genRT_df, 0)
     genRT      = Matrix(genRT_df)
