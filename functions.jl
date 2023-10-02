@@ -24,9 +24,9 @@ function calcRevenue(revenue, priceRT, genRT, priceDAOffer, qDA, iOffer, priceDA
         ) 
         for ih in 1:24)
     a = zeros(24)
-    # for ih = 1:24
-        a[ih:] = sum((priceDAOffer .<= priceDA[1,:])[ih,:] for ih in 1:24)
-    # end
+    for ih = 1:24
+        a[ih] = sum((priceDAOffer .<= priceDA[1,:])[ih,:])
+    end
 
     return revenue[:, iOffer]
 end

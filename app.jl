@@ -13,7 +13,7 @@ include("functions.jl")
         qDA = optimalOffer(G, avgGenRT, priceRT, priceDAOffer, iOffer)
         offerCurve_1[:,iOffer] = JuMP.value.(qDA[:])
         revenue_1[:, iOffer] = calcRevenue(revenue_1, priceRT, avgGenRT, priceDAOffer, qDA, iOffer, priceDA)
-        # revenue_2[:, iOffer] = calcRevenue(revenue_1, priceRT, avgGenRT, zeros(10), zeros(24), iOffer, priceDA)
+        revenue_2[:, iOffer] = calcRevenue(revenue_1, priceRT, avgGenRT, zeros(10), zeros(24), iOffer, priceDA)
 
     end
 #
