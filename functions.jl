@@ -1,12 +1,12 @@
 using GLPK, DataFrames, Statistics
 
-function optimalOffer(G, genRT, priceRT, priceDAOffer, iOffer)
+function optimalOffer(G, genRT, priceRT, priceDAOffer)
 
     m = Model(GLPK.Optimizer)
     
     # qDA = Asset's Day-Ahead Generation Offered - Variable Decision 
     @variable(m, 0 <= qDA[h in 1:24] <= G)
-    @objective(m, Max, sum((priceDAOffer[iOffer] * qDA[h] + 1/nScen * sum((priceRT[s,h] * (genRT[s,h] - qDA[h])) for s in 1:nScen)) for h in 1:24))
+    @objective(m, Max, sum((priceDAOffer * qDA[h] + 1/nScen * sum((priceRT[s,h] * (genRT[s,h] - qDA[h])) for s in 1:nScen)) for h in 1:24))
 
     optimize!(m)
     termination_status(m)
@@ -15,20 +15,22 @@ function optimalOffer(G, genRT, priceRT, priceDAOffer, iOffer)
     return qDA
 end
 
-function calcRevenue(revenue, priceRT, genRT, priceDAOffer, qDA, iOffer, priceDA)
+function calcRevenue(genRT, priceRT, priceDA, priceDAOffer, qDA)
 
-    revenue[:, iOffer] = sum(
+    # Essa formula que ainda precisamos ajustar de acordo com o "ganho do bid"
+    revenue = sum(
         (
-            qDA[iOffer]  .* (priceDAOffer[iOffer] .<= priceRT[:,ih]) .* JuMP.value(qDA[ih]) .+ 
+            priceDAOffer  .* (priceDAOffer .<= priceRT[:,ih]) .* JuMP.value(qDA[ih]) .+ 
             priceRT[:,ih] .* (genRT[:,ih] .- JuMP.value(qDA[ih]))
         ) 
         for ih in 1:24)
-    a = zeros(24)
-    for ih = 1:24
-        a[ih] = sum((priceDAOffer .<= priceDA[1,:])[ih,:])
-    end
 
-    return revenue[:, iOffer]
+    # a = zeros(24)
+    # for ih = 1:24
+    #     a[ih] = sum((priceDAOffer .<= priceDA[1,:])[ih,:])
+    # end
+
+    return revenue
 end
 
 function describeStatistcs(matrix)

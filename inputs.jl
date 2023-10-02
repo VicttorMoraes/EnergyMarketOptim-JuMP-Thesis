@@ -1,7 +1,7 @@
 using CSV, DataFrames
 
 # Inputs Manuais
-    G = 100                                     # Maximum Generation/Quantity | Unit: MW
+    G = 100                                          # Maximum Generation/Quantity | Unit: MW
     priceDAOffer = [0 10 20 30 40 50 60 70 80 90]    # Day Ahead Price - Biddings  | Unit: $/MWh    
 #
 
@@ -19,9 +19,10 @@ using CSV, DataFrames
     priceDA      = Matrix(priceDA_df)
 #
 
-# Number of scenarios and bids    
-    nScen = size(priceRT)[1]           # Number of scenarios         | Unit: Scalar (One-Dimensional)
-    nBids = size(priceDA)[2]           # Number of bids              | Unit: Scalar (One-Dimensional)
+# Number of scenarios, bids, hours    
+    nScen  = size(priceDA)[1]           # Number of scenarios | Unit: Scalar (One-Dimensional)
+    nHours = size(priceDA)[2]           # Number of bids      | Unit: Scalar (One-Dimensional)
+    nBids  = size(priceDAOffer)[2]      # Number of bids      | Unit: Scalar (One-Dimensional)
 #
 
 # Real-Time Price - Average 
