@@ -31,13 +31,6 @@ using CSV, DataFrames
     #     avgPriceRT[ih]     = sum((priceRT_df[s,ih]) for s in 1:nScen) ./ nScen
 # end
 
-# Real-Time Price - Hourly Average 
-avgPriceRT = zeros(nScen,24)
-for ih in 1:24
-    avgPriceRT[:,ih]    .= sum((priceRT_df[s, ih]) for s in 1:nScen) ./ nScen
-end
-#
-
 # Real-Time Generation - DataFrame
     genRT_file = "inputs/Generation-Real-Time-365.csv"
     genRT_df   = CSV.read(genRT_file, DataFrame; drop=[:1])

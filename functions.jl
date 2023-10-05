@@ -1,34 +1,34 @@
 using GLPK, DataFrames, Statistics
 
-function optimalOffer(G, genRT, priceRT, priceDAOffer)
-
+function optimalOffer(G, gRT, priceRT, offerPrice)
+    
     m = Model(GLPK.Optimizer)
     
+    nScen = size(gRT)[1]
+
     # qDA = Asset's Day-Ahead Generation Offered - Variable Decision 
     @variable(m, 0 <= qDA[h in 1:24] <= G)
-    @objective(m, Max, sum((priceDAOffer * qDA[h] + 1/nScen * sum((priceRT[s,h] * (genRT[s,h] - qDA[h])) for s in 1:nScen)) for h in 1:24))
+
+    @objective(m, Max, sum((offerPrice * qDA[h] + 1/nScen * sum((priceRT[s,h] * (gRT[s,h] - qDA[h])) for s in 1:nScen)) for h in 1:24))
 
     optimize!(m)
     termination_status(m)
     objective_value(m)
     
-    return qDA
+    return qDA, objFct
 end
 
-function calcRevenue(genRT, priceRT, priceDA, priceDAOffer, qDA)
+function calcRevenue(genRT, priceRT, priceDA, priceDAOffer, offerCurve_1)
+    # Calculates the final revenue considering 
 
-    # Essa formula que ainda precisamos ajustar de acordo com o "ganho do bid"
-    revenue = sum(
-        (
-            priceDAOffer  .* (priceDAOffer .<= priceRT[:,ih]) .* JuMP.value(qDA[ih]) .+ 
-            priceRT[:,ih] .* (genRT[:,ih] .- JuMP.value(qDA[ih]))
-        ) 
-        for ih in 1:24)
-
-    # a = zeros(24)
-    # for ih = 1:24
-    #     a[ih] = sum((priceDAOffer .<= priceDA[1,:])[ih,:])
-    # end
+    nScen = size(priceRT)[1]
+    revenue = zeros(nScen);
+    for s in 1:nScen
+        for ih in 1:24
+            revenue[s] += sum(offerCurve_1[ih,:] .* transpose(priceDAOffer .<= priceDA[s, ih])) * priceDA[s,ih] +
+                priceRT[s, ih] * (genRT[s,ih] - sum(offerCurve_1[ih,:] .* transpose(priceDAOffer .<= priceDA[s, ih])))
+        end
+    end
 
     return revenue
 end
@@ -46,3 +46,16 @@ function describeStatistcs(matrix)
 
     return stats_df
 end
+
+
+function avgMatrix(matrixData, x, y)
+    # Matrix data must be (x, y). It returns the average of x scenarios per y columns.
+    
+    avgMatrix = zeros(x, y)
+    for ih in 1:y
+        avgMatrix[:,ih] .= sum((matrixData[s, ih]) for s in 1:x) ./ x
+    end
+
+    return avgMatrix
+end
+
