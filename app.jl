@@ -10,13 +10,14 @@ include("functions.jl")
     revenueRT_1    = zeros(nScen);
     offerCurve_1   = zeros(nHours, nBids);
     objFct_1       = zeros(nBids)
+    CVaR           = CVaR_param(0.5, 0.95)
 
     avgGenRT = avgMatrix(genRT, size(genRT)[1], size(genRT)[2]);
 
     for iOffer in 1:nBids
 
         # Resultado da otimização
-        qDA, objFct_1[iOffer] = optimalOffer(G, avgGenRT, priceRT, priceDAOffer[iOffer])
+        qDA, objFct_1[iOffer] = optimalOffer(G, avgGenRT, priceRT, priceDAOffer[iOffer], CVaR)
         
         # Curva de oferta para cada bid simulado
         offerCurve_1[:,iOffer] = JuMP.value.(qDA[:])
@@ -37,7 +38,7 @@ include("functions.jl")
         avgPriceRT = avgMatrix(priceRT, size(priceRT)[1], size(priceRT)[2])[1,:]
         plot(ones(24).*priceDAOffer[iOffer])
         plot!(avgPriceRT)
-        plot!(offerCurve_1[:,iOffer] ./ 20 ,seriestype = [:bar])
+        plot!(offerCurve_1[:,iOffer] ,seriestype = [:bar])
 
         # Revneue difference per scenario (sorted)
         plot(sort(revenueDA_1 .- revenueRT_1))
@@ -45,7 +46,8 @@ include("functions.jl")
 
 #
 
-# Análise 2 - Com o objetivo de maximar a quantidade ofertada olhando a geracao horaria no Real-Time 
+# Análise 2 - Com o objetivo de maximar a quantidade ofertada olhando a geracao horaria no Real-Time
+# Visto que a geração do RT multiplica somente o preço no RT, independetemente da correl negativa, o resultado não é alterado série a série (contudo, há um efeito de deslocamento da curva)
     revenueDA_2    = zeros(nScen)
     revenueRT_2    = zeros(nScen)
     offerCurve_2   = zeros(nHours, nBids)
@@ -54,7 +56,7 @@ include("functions.jl")
     for iOffer in 1:nBids
 
         # Resultado da otimização
-        qDA, objFct_2[iOffer] = optimalOffer(G, genRT, priceRT, priceDAOffer[iOffer])
+        qDA, objFct_2[iOffer] = optimalOffer(G, genRT, priceRT, priceDAOffer[iOffer], CVaR)
 
         # Curva de oferta para cada bid simulado
         offerCurve_2[:,iOffer] = JuMP.value.(qDA[:])

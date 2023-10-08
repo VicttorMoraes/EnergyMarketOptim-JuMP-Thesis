@@ -1,19 +1,33 @@
 using GLPK, DataFrames, Statistics
 
-function optimalOffer(G, gRT, priceRT, offerPrice)
-    
-    m = Model(GLPK.Optimizer)
+struct  CVaR_param
+    λ
+    α
+end
+
+function optimalOffer(G, gRT, priceRT, offerPrice, CVaR)
     
     nScen = size(gRT)[1]
+    λ = CVaR.λ    
+    α = CVaR.α
+
+    m = Model(GLPK.Optimizer)
 
     # qDA = Asset's Day-Ahead Generation Offered - Variable Decision 
     @variable(m, 0 <= qDA[h in 1:24] <= G)
 
-    @objective(m, Max, sum((offerPrice * qDA[h] + 1/nScen * sum((priceRT[s,h] * (gRT[s,h] - qDA[h])) for s in 1:nScen)) for h in 1:24))
+    # Variáveis do CVaR
+    @variable(m, δ[h in 1:24] >= 0)
+    @variable(m, z[h in 1:24])
+    
+    # Restrição do CVaR
+    @constraint(m, [h in 1:24], δ .>= z .- 1/nScen * sum((priceRT[s,h] * (gRT[s,h] - qDA[h])) for s in 1:nScen))
+    
+    @objective(m, Max, sum(offerPrice * qDA[:] .+ (1 - λ) * 1/nScen * sum((priceRT[s,:] .* (gRT[s,:] .- qDA[:])) for s in 1:nScen) .+ λ * (z .- δ / (1-α))))
 
     optimize!(m)
     termination_status(m)
-    objective_value(m)
+    objFct = objective_value(m)
     
     return qDA, objFct
 end
