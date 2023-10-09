@@ -25,8 +25,8 @@ include("functions.jl")
     end
 
     # Receita DA e RT da primeira análise
-        revenueDA_1[:] = calcRevenue(genRT, priceRT, priceDA, priceDAOffer, offerCurve_1);
-        revenueRT_1[:] = calcRevenue(genRT, priceRT, priceDA, zeros(nBids), zeros(nHours));
+        revenueDA_1[:] = calcRevenue(avgGenRT, priceRT, priceDA, priceDAOffer, offerCurve_1);
+        revenueRT_1[:] = calcRevenue(avgGenRT, priceRT, priceDA, zeros(nBids), zeros(nHours));
 
         benefit_1 = (mean(revenueDA_1) - mean(revenueRT_1)) / mean(revenueRT_1) * 100
         
@@ -38,10 +38,16 @@ include("functions.jl")
         avgPriceRT = avgMatrix(priceRT, size(priceRT)[1], size(priceRT)[2])[1,:]
         plot(ones(24).*priceDAOffer[iOffer])
         plot!(avgPriceRT)
-        plot!(offerCurve_1[:,iOffer] ,seriestype = [:bar])
+        plot!(offerCurve_1[:,iOffer] ,seriestype = [:scatter])
+        plot!(avgGenRT[1,:])
+        
 
         # Revenue difference per scenario (sorted)
         plot(sort(revenueDA_1 .- revenueRT_1))
+    #
+
+    # Printing results
+
     #
 
 #
@@ -52,6 +58,7 @@ include("functions.jl")
     revenueRT_2    = zeros(nScen)
     offerCurve_2   = zeros(nHours, nBids)
     objFct_2       = zeros(nBids)
+    CVaR           = CVaR_param(0.9, 0.95)
 
     for iOffer in 1:nBids
 
@@ -77,7 +84,8 @@ include("functions.jl")
         avgPriceRT = avgMatrix(priceRT, size(priceRT)[1], size(priceRT)[2])[1,:]
         plot(ones(24).*priceDAOffer[iOffer])
         plot!(avgPriceRT)
-        plot!(offerCurve_2[:,iOffer] ,seriestype = [:bar])
+        plot!(offerCurve_2[:,iOffer] ,seriestype = [:scatter])
+        plot!(avgGenRT[1,:])
 
         # Revneue difference per scenario (sorted)
         plot(sort(revenueDA_2 .- revenueRT_2))
