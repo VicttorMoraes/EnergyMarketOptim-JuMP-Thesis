@@ -6,8 +6,8 @@ include("functions.jl")
 # Análise 1 - Otimização de receita esperada considerando geração média do ativo na liquidação RT.
 # Espera-se que, sempre que a média do preço RT for acima do preço DA, não haverá oferta de quantidade no DA, deixando toda liquidação da energia para o RT. 
 
-    revenueDA_1    = zeros(nScen);
-    revenueRT_1    = zeros(nScen);
+    revenueDA_1    = zeros(nScen, nHours);
+    revenueRT_1    = zeros(nScen, nHours);
     offerCurve_1   = zeros(nHours, nBids);
     objFct_1       = zeros(nBids)
     CVaR           = CVaR_param(0.5, 0.95)
@@ -25,8 +25,8 @@ include("functions.jl")
     end
 
     # Receita DA e RT da primeira análise
-        revenueDA_1[:] = calcRevenue(avgGenRT, priceRT, priceDA, priceDAOffer, offerCurve_1);
-        revenueRT_1[:] = calcRevenue(avgGenRT, priceRT, priceDA, zeros(nBids), zeros(nHours));
+        revenueDA_1[:,:] =  calcRevenue(avgGenRT, priceRT, priceDA, priceDAOffer, offerCurve_1);
+        revenueRT_1[:,:] =  calcRevenue(avgGenRT, priceRT, priceDA, zeros(nBids), zeros(nHours));
 
         benefit_1 = (mean(revenueDA_1) - mean(revenueRT_1)) / mean(revenueRT_1) * 100
         
@@ -41,22 +41,25 @@ include("functions.jl")
         plot!(offerCurve_1[:,iOffer] ,seriestype = [:scatter])
         plot!(avgGenRT[1,:])
         
-
+        revDA_1 = sumMatrix(revenueDA_1, nScen, nHours)
+        revRT_1 = sumMatrix(revenueRT_1, nScen, nHours)
+            
         # Revenue difference per scenario (sorted)
-        plot(sort(revenueDA_1 .- revenueRT_1))
+        plot(sort(revDA_1 .- revRT_1))
     #
 
     # Printing results
-
+    CSV.write("revenueDA_1.csv", DataFrame(revenueDA_1, :auto))
+    CSV.write("revenueRT_1.csv", DataFrame(revenueRT_1, :auto))
     #
 
 #
 
 # Análise 2 - Com o objetivo de maximar a quantidade ofertada olhando a geracao horaria no Real-Time
 # Visto que a geração do RT multiplica somente o preço no RT, independetemente da correl negativa, o resultado não é alterado série a série (contudo, há um efeito de deslocamento da curva)
-    revenueDA_2    = zeros(nScen)
-    revenueRT_2    = zeros(nScen)
-    offerCurve_2   = zeros(nHours, nBids)
+    revenueDA_2    = zeros(nScen, nHours);
+    revenueRT_2    = zeros(nScen, nHours);
+    offerCurve_2   = zeros(nHours, nBids);
     objFct_2       = zeros(nBids)
     CVaR           = CVaR_param(0.9, 0.95)
 
@@ -87,8 +90,16 @@ include("functions.jl")
         plot!(offerCurve_2[:,iOffer] ,seriestype = [:scatter])
         plot!(avgGenRT[1,:])
 
-        # Revneue difference per scenario (sorted)
-        plot(sort(revenueDA_2 .- revenueRT_2))
+        revDA_2 = sumMatrix(revenueDA_2, nScen, nHours)
+        revRT_2 = sumMatrix(revenueRT_2, nScen, nHours)
+        
+        # Revenue difference per scenario (sorted)
+        plot(sort(revDA_2 .- revRT_2))
+    #
+
+    # Printing results
+    CSV.write("revenueDA_2.csv", DataFrame(revenueDA_2, :auto))
+    CSV.write("revenueRT_2.csv", DataFrame(revenueRT_2, :auto))
     #
 
     # Auxiliar: Cálculo de Correlação 

@@ -36,14 +36,16 @@ function calcRevenue(genRT, priceRT, priceDA, priceDAOffer, offerCurve_1)
     # Calculates the final revenue considering 
 
     nScen = size(priceRT)[1]
-    revenue = zeros(nScen);
+    nHours = size(priceRT)[2]
+    revenue = zeros(nScen, nHours);
     for s in 1:nScen
-        for ih in 1:24
-            revenue[s] += sum(offerCurve_1[ih,:] .* transpose(priceDAOffer .<= priceDA[s, ih])) * priceDA[s,ih] +
+        for ih in 1:nHours
+            revenue[s, ih] += sum(offerCurve_1[ih,:] .* transpose(priceDAOffer .<= priceDA[s, ih])) * priceDA[s,ih] +
                 priceRT[s, ih] * (genRT[s,ih] - sum(offerCurve_1[ih,:] .* transpose(priceDAOffer .<= priceDA[s, ih])))
+            
         end
     end
-
+    
     return revenue
 end
 
@@ -73,3 +75,12 @@ function avgMatrix(matrixData, x, y)
     return avgMatrix
 end
 
+function sumMatrix(matrixData, x, y)
+    # Matrix data must be (x, y). It returns the sum of x scenarios per y columns.
+    sumMatrix = zeros(x)
+    for d in 1:x
+        sumMatrix[d] = sum(matrixData[d, h] for h in 1:y)
+    end
+    
+    return sumMatrix
+end
