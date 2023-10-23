@@ -1,4 +1,4 @@
-using GLPK, DataFrames, Statistics
+using GLPK, DataFrames, Statistics, XLSX
 
 struct  CVaR_param
     λ
@@ -27,9 +27,10 @@ function optimalOffer(G, gRT, priceRT, offerPrice, CVaR)
 
     optimize!(m)
     termination_status(m)
-    objFct = objective_value(m)
-    
-    return qDA, objFct
+    objFct   = objective_function(m)
+    objValue = objective_value(m)
+
+    return qDA, objFct, objValue
 end
 
 function calcRevenue(genRT, priceRT, priceDA, priceDAOffer, offerCurve_1)
@@ -49,21 +50,29 @@ function calcRevenue(genRT, priceRT, priceDA, priceDAOffer, offerCurve_1)
     return revenue
 end
 
-function describeStatistcs(matrix)
-    # Creating a DataFrame to hold the descriptive statistics
-    stats_df = DataFrame(
-        Mean = mean(matrix, dims=1)[:],
-        Minimum = minimum(matrix, dims=1)[:],
-        Maximum = maximum(matrix, dims=1)[:],
-        Std_Dev = std(matrix, dims=1)[:],
-        P5 = [quantile(matrix[:, i], 0.05) for i = 1:size(matrix, 2)],
-        P95 = [quantile(matrix[:, i], 0.95) for i = 1:size(matrix, 2)]
-    )
+# Export data
+function exportExcel(excelFileName, genRT, priceRT, priceDA, priceDAOffer, offerCurve_1, offerCurve_2, revenueDA_1, revenueRT_1, revenueDA_2, revenueRT_2, objValue_1, objValue_2)
+    # Exports all important data to excel
 
-    return stats_df
+    XLSX.writetable("results/$excelFileName.xlsx", 
+    GEN_RT       = (collect(eachcol(genRT))        , string.("H", 1:24)),
+    PRICE_RT     = (collect(eachcol(priceRT))      , string.("H", 1:24)), 
+    PRICE_DA     = (collect(eachcol(priceDA))      , string.("H", 1:24)), 
+    OFFER_DA_1   = (collect(eachcol(vcat(priceDAOffer, offerCurve_1))) , string.("Offer_", 1:10)),
+    OFFER_DA_2   = (collect(eachcol(vcat(priceDAOffer, offerCurve_2))) , string.("Offer_", 1:10)),
+    REVENUE_DA_1 = (collect(eachcol(revenueDA_1))  , string.("H", 1:24)), 
+    REVENUE_RT_1 = (collect(eachcol(revenueRT_1))  , string.("H", 1:24)), 
+    REVENUE_DA_2 = (collect(eachcol(revenueDA_2))  , string.("H", 1:24)), 
+    REVENUE_RT_2 = (collect(eachcol(revenueRT_2))  , string.("H", 1:24)), 
+    OBJ_FCT_1    = (collect(eachrow(objValue_1))   , string.("Obj_Fuction_", 1:10)), 
+    OBJ_FCT_2    = (collect(eachrow(objValue_2))   , string.("Obj_Fuction_", 1:10)), 
+    overwrite=true)
+
 end
 
 
+
+# Aggregation
 function avgMatrix(matrixData, x, y)
     # Matrix data must be (x, y). It returns the average of x scenarios per y columns.
     
@@ -83,4 +92,19 @@ function sumMatrix(matrixData, x, y)
     end
     
     return sumMatrix
+end
+
+# Describe
+function describeStatistcs(matrix)
+    # Creating a DataFrame to hold the descriptive statistics
+    stats_df = DataFrame(
+        Mean = mean(matrix, dims=1)[:],
+        Minimum = minimum(matrix, dims=1)[:],
+        Maximum = maximum(matrix, dims=1)[:],
+        Std_Dev = std(matrix, dims=1)[:],
+        P5 = [quantile(matrix[:, i], 0.05) for i = 1:size(matrix, 2)],
+        P95 = [quantile(matrix[:, i], 0.95) for i = 1:size(matrix, 2)]
+    )
+
+    return stats_df
 end

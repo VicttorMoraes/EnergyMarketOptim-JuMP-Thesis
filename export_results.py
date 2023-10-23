@@ -12,7 +12,7 @@ def write_revenue_into_single_file():
     revDA_2 = pd.read_csv("revenueDA_2.csv")
     revRT_2 = pd.read_csv("revenueRT_2.csv")
 
-    with pd.ExcelWriter(f'results_{datetime.now().strftime("%Y-%m-%d")}.xlsx') as writer:  
+    with pd.ExcelWriter(f'results/results_{datetime.now().strftime("%Y-%m-%d")}.xlsx') as writer:  
         revDA_1.to_excel(writer, sheet_name='revenueDA_1')
         revRT_1.to_excel(writer, sheet_name='revenueRT_1')
         revDA_2.to_excel(writer, sheet_name='revenueDA_2')
