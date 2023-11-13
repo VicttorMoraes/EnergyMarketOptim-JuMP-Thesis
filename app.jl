@@ -1,4 +1,4 @@
-using JuMP, GLPK, CSV, DataFrames, Plots, Distributions
+using JuMP, CSV, DataFrames, Plots, Distributions
 
 include("inputs.jl")
 include("functions.jl")
@@ -11,7 +11,7 @@ include("functions.jl")
     revenueRT_1    = zeros(nScen, nHours);
     offerCurve_1   = zeros(nHours, nBids);
     objValue_1     = zeros(nBids);
-    CVaR           = CVaR_param(0.5, 0.95)
+    CVaR           = CVaR_param(0.5, 0.5)
 
     avgGenRT = avgMatrix(genRT, size(genRT)[1], size(genRT)[2]);
 
@@ -63,7 +63,7 @@ include("functions.jl")
     revenueRT_2    = zeros(nScen, nHours);
     offerCurve_2   = zeros(nHours, nBids);
     objValue_2     = zeros(nBids);
-    CVaR           = CVaR_param(0.9, 0.95)
+    CVaR           = CVaR_param(0.5, 0.5)
 
     for iOffer in 1:nBids
 
@@ -114,7 +114,8 @@ include("functions.jl")
 #
 
 # Exporting all results
-exportExcel(genRT, priceRT, priceDA, priceDAOffer, offerCurve_1, offerCurve_2, revenueDA_1, revenueRT_1, revenueDA_2, revenueRT_2, objValue_1, objValue_2)
+excelFileName = "results_cvar_50_50_20_Scen"
+exportExcel(excelFileName, genRT, priceRT, priceDA, priceDAOffer, offerCurve_1, offerCurve_2, revenueDA_1, revenueRT_1, revenueDA_2, revenueRT_2, objValue_1, objValue_2)
 
 # Results summary
     resultsDA_1 = describeStatistcs(revenueDA_1)
