@@ -17,13 +17,18 @@ function optimalOffer(G, gRT, priceRT, offerPrice, CVaR)
     @variable(m, 0 <= qDA[h in 1:24] <= G)
 
     # Variáveis do CVaR
-    @variable(m, δ[h in 1:24] >= 0)
+    # @variable(m, δ[h in 1:24] >= 0)
+    # @variable(m, z[h in 1:24])
+    @variable(m, δ[s in 1:nScen, h in 1:24] >= 0)
     @variable(m, z[h in 1:24])
     
     # Restrição do CVaR
-    @constraint(m, [h in 1:24], δ .>= z .- 1/nScen * sum((priceRT[s,h] * (gRT[s,h] - qDA[h])) for s in 1:nScen))
-    
-    @objective(m, Max, sum(offerPrice * qDA[:] .+ (1 - λ) * 1/nScen * sum((priceRT[s,:] .* (gRT[s,:] .- qDA[:])) for s in 1:nScen) .+ λ * (z .- δ / (1-α))))
+    # @constraint(m, [h in 1:24], δ .>= z .- 1/nScen * sum((priceRT[s,h] * (gRT[s,h] - qDA[h])) for s in 1:nScen))
+    @constraint(m, [h in 1:24, s in 1:nScen], δ[s,h] >= z[h] - (priceRT[s,h] * (gRT[s,h] - qDA[h])))
+
+    # @objective(m, Max, sum(offerPrice * qDA[:] .+ (1 - λ) * 1/nScen * sum((priceRT[s,:] .* (gRT[s,:] .- qDA[:])) for s in 1:nScen) .+ λ * (z .- δ / (1-α))))
+    # @objective(m, Max, sum(offerPrice * qDA[:] .+ (1 - λ) * 1/nScen * sum((priceRT[s,:] .* (gRT[s,:] .- qDA[:])) for s in 1:nScen) .+ λ * (z .- (1/nScen) * δ / (1-α))))
+    @objective(m, Max, sum(offerPrice * qDA[:] .+ (1 - λ) * 1/nScen * sum((priceRT[s,:] .* (gRT[s,:] .- qDA[:])) for s in 1:nScen) .+ λ * (z[:] .- (1/nScen) * (1/(1-α)) * sum((δ[s,:]) for s in 1:nScen))))
 
     optimize!(m)
     termination_status(m)

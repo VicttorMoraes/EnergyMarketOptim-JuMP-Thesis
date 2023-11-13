@@ -63,7 +63,7 @@ include("functions.jl")
     revenueRT_2    = zeros(nScen, nHours);
     offerCurve_2   = zeros(nHours, nBids);
     objValue_2     = zeros(nBids);
-    CVaR           = CVaR_param(0.5, 0.5)
+    CVaR           = CVaR_param(0.5, 0.90)
 
     for iOffer in 1:nBids
 
@@ -85,7 +85,7 @@ include("functions.jl")
     #
 
     # Evaluating Results
-        iOffer = 4
+        iOffer = 7
         avgPriceRT = avgMatrix(priceRT, size(priceRT)[1], size(priceRT)[2])[1,:]
         plot(ones(24).*priceDAOffer[iOffer])
         plot!(avgPriceRT)
