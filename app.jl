@@ -63,7 +63,7 @@ include("functions.jl")
     revenueRT_2    = zeros(nScen, nHours);
     offerCurve_2   = zeros(nHours, nBids);
     objValue_2     = zeros(nBids);
-    CVaR           = CVaR_param(0.5, 0.90)
+    CVaR           = CVaR_param(0.5, 0.50)
 
     for iOffer in 1:nBids
 
@@ -114,7 +114,7 @@ include("functions.jl")
 #
 
 # Exporting all results
-excelFileName = "results_cvar_50_50_20_Scen"
+excelFileName = "results_cvar_50_50_365_Scen"
 exportExcel(excelFileName, genRT, priceRT, priceDA, priceDAOffer, offerCurve_1, offerCurve_2, revenueDA_1, revenueRT_1, revenueDA_2, revenueRT_2, objValue_1, objValue_2)
 
 # Results summary
