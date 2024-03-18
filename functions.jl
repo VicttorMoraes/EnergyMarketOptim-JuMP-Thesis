@@ -17,17 +17,12 @@ function optimalOffer(G, gRT, priceRT, offerPrice, CVaR)
     @variable(m, 0 <= qDA[h in 1:24] <= G)
 
     # Variáveis do CVaR
-    # @variable(m, δ[h in 1:24] >= 0)
-    # @variable(m, z[h in 1:24])
     @variable(m, δ[s in 1:nScen, h in 1:24] >= 0)
     @variable(m, z[h in 1:24])
     
     # Restrição do CVaR
-    # @constraint(m, [h in 1:24], δ .>= z .- 1/nScen * sum((priceRT[s,h] * (gRT[s,h] - qDA[h])) for s in 1:nScen))
     @constraint(m, [h in 1:24, s in 1:nScen], δ[s,h] >= z[h] - (priceRT[s,h] * (gRT[s,h] - qDA[h])))
 
-    # @objective(m, Max, sum(offerPrice * qDA[:] .+ (1 - λ) * 1/nScen * sum((priceRT[s,:] .* (gRT[s,:] .- qDA[:])) for s in 1:nScen) .+ λ * (z .- δ / (1-α))))
-    # @objective(m, Max, sum(offerPrice * qDA[:] .+ (1 - λ) * 1/nScen * sum((priceRT[s,:] .* (gRT[s,:] .- qDA[:])) for s in 1:nScen) .+ λ * (z .- (1/nScen) * δ / (1-α))))
     @objective(m, Max, sum(offerPrice * qDA[:] .+ (1 - λ) * 1/nScen * sum((priceRT[s,:] .* (gRT[s,:] .- qDA[:])) for s in 1:nScen) .+ λ * (z[:] .- (1/nScen) * (1/(1-α)) * sum((δ[s,:]) for s in 1:nScen))))
 
     optimize!(m)
@@ -56,20 +51,16 @@ function calcRevenue(genRT, priceRT, priceDA, priceDAOffer, offerCurve_1)
 end
 
 # Export data
-function exportExcel(excelFileName, genRT, priceRT, priceDA, priceDAOffer, offerCurve_1, offerCurve_2, revenueDA_1, revenueRT_1, revenueDA_2, revenueRT_2, objValue_1, objValue_2)
+function exportExcel(excelFileName, genRT, priceRT, priceDA, priceDAOffer, offerCurve_2, revenueDA_2, revenueRT_2, objValue_2)
     # Exports all important data to excel
 
     XLSX.writetable("results/$excelFileName.xlsx", 
     GEN_RT       = (collect(eachcol(genRT))        , string.("H", 1:24)),
     PRICE_RT     = (collect(eachcol(priceRT))      , string.("H", 1:24)), 
     PRICE_DA     = (collect(eachcol(priceDA))      , string.("H", 1:24)), 
-    OFFER_DA_1   = (collect(eachcol(vcat(priceDAOffer, offerCurve_1))) , string.("Offer_", 1:10)),
     OFFER_DA_2   = (collect(eachcol(vcat(priceDAOffer, offerCurve_2))) , string.("Offer_", 1:10)),
-    REVENUE_DA_1 = (collect(eachcol(revenueDA_1))  , string.("H", 1:24)), 
-    REVENUE_RT_1 = (collect(eachcol(revenueRT_1))  , string.("H", 1:24)), 
     REVENUE_DA_2 = (collect(eachcol(revenueDA_2))  , string.("H", 1:24)), 
     REVENUE_RT_2 = (collect(eachcol(revenueRT_2))  , string.("H", 1:24)), 
-    OBJ_FCT_1    = (collect(eachrow(objValue_1))   , string.("Obj_Fuction_", 1:10)), 
     OBJ_FCT_2    = (collect(eachrow(objValue_2))   , string.("Obj_Fuction_", 1:10)), 
     overwrite=true)
 
