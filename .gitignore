@@ -26,3 +26,4 @@ Manifest.toml
 *.xlsx
 *.xlsm
 *.csv
+results/*
